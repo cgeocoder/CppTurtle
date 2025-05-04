@@ -1,0 +1,22 @@
+// Грамматика языка 6-го задания ЕГЭ
+
+tok_literal ::= [0-9]*
+
+tok_repeat ::= 'Повтори'
+tok_fw ::= 'Вперёд'
+tok_bw ::= 'Назад' 
+tok_rt ::= 'Направо' 
+tok_lt ::= 'Налево' 
+tok_up ::= 'Поднять'
+tok_down ::= 'Опустить'
+tok_tail ::= 'хвост'
+tok_lsp ::= '['
+tok_rsp ::= ']'
+
+stmt_simple_cmd ::= (tok_fw | tok_bw | tok_rt | tok_lt) tok_literal
+stmt_blocks ::= stmt stmt
+stmt_cycle ::= tok_repeat tok_literal tok_lsp stmt tok_rsp
+stmt_tail_up ::= tok_up tok_tail
+stmt_tail_down ::= tok_down tok_tail
+
+stmt ::= stmt_simple_cmd | stmt_blocks | stmt_cycle | stmt_tail_down
