@@ -1,1 +1,2 @@
-# EGE6Interpreter
+# CppTurtle
+#### A simple graphics library turtle
