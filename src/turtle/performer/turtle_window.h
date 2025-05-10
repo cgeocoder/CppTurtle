@@ -7,6 +7,8 @@
 #include <thread>
 #include <atomic>
 #include "vec.h"
+#include <list>
+#include <mutex>
 
 namespace turtle {
 
@@ -16,7 +18,11 @@ namespace turtle {
 		TurtleWindow(
 			std::atomic<sf::Vector2f>& _Pos,
 			std::atomic<sf::Vector2u>& _Size,
-			const bool _GridVisible
+			std::atomic<float>& _Ang,
+			std::mutex& _upMutex,
+			std::list<sf::CircleShape>& _UserPoints,
+			std::mutex& _ulMutex,
+			std::list<sf::RectangleShape>& _UserLines
 		);
 
 		inline ~TurtleWindow() {
@@ -26,7 +32,11 @@ namespace turtle {
 		void run(
 			std::atomic<sf::Vector2f>& _Pos,
 			std::atomic<sf::Vector2u>& _Size,
-			const bool _GridVisible
+			std::atomic<float>& _Ang,
+			std::mutex& _upMutex,
+			std::list<sf::CircleShape>& _UserPoints,
+			std::mutex& _ulMutex,
+			std::list<sf::RectangleShape>& _UserLines
 		);
 
 		// Waits until the window closes

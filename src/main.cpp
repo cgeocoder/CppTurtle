@@ -9,20 +9,56 @@
 const std::string path =
     "C:\\Users\\Гео\\source\\repos\\EGE6Interpreter\\EGE6Interpreter\\src\\turtle\\interpreter\\test.ege6i";
 
-auto printc(const turtle::Turtle& t) {
-    auto pos = t.get_pos();
-    std::cout << "Turtle (" << pos.x << ", " << pos.y << ") " << t.get_ang() << "\n";
+static void make_grid(turtle::Turtle& t, trangef x_range, trangef y_range) {
+    t.up();
+
+    for (auto& x : x_range) {
+        for (auto& y : y_range) {
+            t.set_pos(x, y);
+            t.dot();
+        }
+    }
+
+    t.down();
+}
+
+static void make_grid(turtle::Turtle& t, trangef _range) {
+    t.up();
+
+    for (auto& x : _range) {
+        for (auto& y : _range) {
+            t.set_pos(x, y);
+            t.dot(0.5f);
+        }
+    }
+
+    t.set_pos(0, 0);
+    t.down();
 }
 
 int main(int argc, char* argv[]) {
-    turtle::Turtle t = { true };
+    turtle::Turtle t;
 
-    t.set_speed(turtle::slow);
+    // make_grid(t, turtle::range(-100.f, 100.f, 10.f));
 
-    while (1) {
-        t.forward(5);
-        t.right(90);
-    }
+    // OY
+
+    t.up();
+    t.set_pos(0, -200);
+    t.down();
+    t.set_pos(0, 200);
+
+    // OX
+
+    t.up();
+    t.set_pos(200, 0);
+    t.down();
+    t.set_pos(-200, 0);
+
+    make_plot(t, [&](float x) -> float {
+        return 100.f * turtle::tsin(x);
+    }, 
+    turtle::range(-400.0f, 400.0f, 0.8f));
     
     return 0;
 }

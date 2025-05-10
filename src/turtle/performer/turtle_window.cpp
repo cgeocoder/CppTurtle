@@ -3,25 +3,38 @@
 #include <iostream>
 
 namespace turtle {
-	constexpr const size_t default_grid_size = 10'670ULL;
 	const sf::Vector2f turtle_sprite_scale(0.015f, 0.015f);
 
 	TurtleWindow::TurtleWindow(
-		std::atomic<sf::Vector2f>& _Pos, 
+		std::atomic<sf::Vector2f>& _Pos,
 		std::atomic<sf::Vector2u>& _Size,
-		const bool _GridVisible) {
+		std::atomic<float>& _Ang,
+		std::mutex& _upMutex,
+		std::list<sf::CircleShape>& _UserPoints,
+		std::mutex& _ulMutex,
+		std::list<sf::RectangleShape>& _UserLines) {
 
 		this->m_WndThread = std::thread([&]() {
-			this->run(_Pos, _Size, _GridVisible);
+			this->run(
+				_Pos, _Size, _Ang,
+				_upMutex,
+				_UserPoints,
+				_ulMutex,
+				_UserLines
+			);
 		});
 
 		while ((_Size.load().x == 0.0f) || (_Size.load().y == 0.0f));
 	}
 
 	void TurtleWindow::run(
-		std::atomic<sf::Vector2f>& _Pos, 
+		std::atomic<sf::Vector2f>& _Pos,
 		std::atomic<sf::Vector2u>& _Size,
-		const bool _GridVisible) {
+		std::atomic<float>& _Ang,
+		std::mutex& _upMutex,
+		std::list<sf::CircleShape>& _UserPoints,
+		std::mutex& _ulMutex,
+		std::list<sf::RectangleShape>& _UserLines) {
 
 		const auto monitor_param = sf::VideoMode::getDesktopMode();
 
@@ -37,7 +50,7 @@ namespace turtle {
 
 		sf::RenderWindow wnd(
 			sf::VideoMode(window_size.x, window_size.y),
-			"Turtle++",
+			"CppTurtle",
 			sf::Style::Titlebar | sf::Style::Close,
 			wc_settings
 		);
@@ -63,51 +76,6 @@ namespace turtle {
 		this->m_Turtle.setOrigin(texture_size.x / 2.f, texture_size.y / 2.f);
 		this->m_Turtle.setScale(turtle_sprite_scale);
 
-		// Grid
-
-		sf::CircleShape* grid = nullptr;
-
-		if (_GridVisible) {
-			grid = new sf::CircleShape[default_grid_size + 1];
-
-			size_t counter = 0;
-			constexpr const float scale = 35.0f;
-			constexpr const float point_radius = 3.5f;
-			unsigned int point_counter = 0;
-
-			const float center_x = window_size.x / 2.0f;
-			const float center_y = window_size.y / 2.0f;
-
-			auto add_point = [&](const float &px, const float& py) {
-				sf::CircleShape point(point_radius, 40);
-				point.setOrigin(point_radius / 2.f, point_radius / 2.f);
-				point.setFillColor(sf::Color::Black);
-				point.setPosition(sf::Vector2f(px, py));
-
-				grid[counter++] = point;
-			};
-
-			for (float x = center_x; x < (float)window_size.x * 2.f; x += scale) {
-				for (float y = center_y; y < (float)window_size.y * 2.f; y += scale) {
-					add_point(x, y);
-				}
-
-				for (float y = center_y; y > -(float)window_size.y * 1.5f; y -= scale) {
-					add_point(x, y);
-				}
-			}
-
-			for (float x = center_x; x > -(float)window_size.x * 1.f; x -= scale) {
-				for (float y = center_y; y < (float)window_size.y * 2.f; y += scale) {
-					add_point(x, y);
-				}
-
-				for (float y = center_y; y > -(float)window_size.y * 1.5f; y -= scale) {
-					add_point(x, y);
-				}
-			}
-		}
-
 		volatile bool view_move_enable = false;
 		sf::Vector2i mouse_pos = sf::Mouse::getPosition(wnd);
 
@@ -125,6 +93,7 @@ namespace turtle {
 
 		// Main loop
 		
+		float a = 0.0f;
 		signed int zoom_count = 0;
 		while (wnd.isOpen()) {
 			sf::Event event;
@@ -147,7 +116,7 @@ namespace turtle {
 							}
 						}
 						else {
-							if (zoom_count < 15) {
+							if (zoom_count < 30) {
 								view.zoom(0.9f);
 								zoom_count += 1;
 							}
@@ -188,15 +157,26 @@ namespace turtle {
 			wnd.clear(sf::Color::White);
 			wnd.setView(view);
 
-			if (_GridVisible) {
-				for (size_t i = 0; i < default_grid_size; ++i)
-					wnd.draw(grid[i]);
-			}
+			_upMutex.lock();
+
+			for (auto& point : _UserPoints)
+				wnd.draw(point);
+
+			_upMutex.unlock();
+
+			_ulMutex.lock();
+
+			for (auto& line : _UserLines)
+				wnd.draw(line);
+
+			_ulMutex.unlock();
 
 			sf::Vector2f pos = _Pos.load();
 			this->m_Turtle.setPosition(pos.x, pos.y);
 
-			wnd.draw(this->m_Turtle);
+			// wnd.draw(this->m_Turtle);
+
+			
 
 			wnd.display();
 		}
