@@ -2,17 +2,25 @@
 
 #include "turtle/turtle.h"
 
-
 int main(int argc, char* argv[]) {
     turtle::Turtle t;
     t.set_speed(turtle::TurtleSpeed::no_animation);
 
-    make_grid(t, turtle::range(-100.0f, 100.0f, 10.0f));
+    t.set_color("blue");
 
-    for (int i = 0; i < 100; ++i) {
-        t.forward(i);
-        t.right(90);
-    }
+    make_plot(t, turtle::range(-400.0f, 400.0f, 1.0f), 
+        [&](float x) -> float {
+            return 100.0f * turtle::tsin(x);
+        }
+    );
+
+    t.set_color("red");
+
+    make_plot(t, turtle::range(-400.0f, 400.0f, 1.0f),
+        [&](float x) -> float {
+            return 100.0f * turtle::tcos(x);
+        }
+    );
 
     return 0;
 }

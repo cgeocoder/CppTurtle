@@ -12,21 +12,65 @@
 
 #include "turtle_math.h"
 #include "turtle_window.h"
+#include "turtle_color.h"
 
 namespace turtle {
+    class Turtle;
+
+    // Drawing plot by function
+    // @param _Turtle - Turtle
+    // @param _Function - ref to a function f(x) for drawing plot
+    // @param _XRange - range of X ordinate
+    void make_plot(
+        turtle::Turtle& _Turtle,
+        trangef _XRange,
+        std::function<float(float)> _Function
+    );
+
+    // Drawing grid
+    // @param _Turtle - Turtle
+    // @param _XRange - range of X ordinate
+    // @param _YRange - range of Y ordinate
+    // @param _PointRadius - point of radius
+    void make_grid(
+        turtle::Turtle& _Turtle,
+        trangef _XRange,
+        trangef _YRange,
+        float _PointRadius = 1.0f,
+        const char* _Color = "black"
+    );
+
+    // Drawing grid
+    // @param _Turtle - Turtle
+    // @param _XRange - range of X and Y ordinates
+    // @param _PointRadius - point of radius
+    void make_grid(
+        turtle::Turtle& _Turtle,
+        trangef _Range,
+        float _PointRadius = 1.0f,
+        const char* _Color = "black"
+    );
+
+    // Drawing line
+    // @param _Turtle - Turtle
+    // @param _X1 - X of start point
+    // @param _Y1 - Y of start point
+    // @param _X2 - X of end point
+    // @param _Y2 - Y of end point
+    void make_line(
+        turtle::Turtle& _Turtle,
+        const float& _X1,
+        const float& _Y1,
+        const float& _X2,
+        const float& _Y2
+    );
+
     enum class TurtleSpeed {
         // disable animation
         no_animation,
         fast,
         slow,
         normal
-    };
-
-    enum class TurtleColors {
-        black,
-        red,
-        yellow,
-        blue
     };
 
     // A general class for working with Turtle graphics
@@ -87,11 +131,11 @@ namespace turtle {
         );
 
         // Draw point
-        // @param _Radius - dot radius
         // @param _Color - dot color
+        // @param _Radius - dot radius
         void dot(
-            float _Radius = 2.0f, 
-            TurtleColors _Color = TurtleColors::black
+            const char* _Color = "black",
+            float _Radius = 2.0f
         );
 
         // Raise the Turtle tail
@@ -116,65 +160,22 @@ namespace turtle {
             TurtleSpeed _NewSpeed
         );
 
-        // Drawing plot by function
-        // @param _Turtle - Turtle
-        // @param _Function - ref to a function f(x) for drawing plot
-        // @param _XRange - range of X ordinate
-        friend void make_plot(
-            turtle::Turtle& _Turtle, 
-            std::function<float(float)> _Function, 
-            trangef _XRange
-        );
+        void set_color(const char* _Color);
+        void set_color(uint8_t _R, uint8_t _G, uint8_t _B, uint8_t _A = 255);
 
-        // Drawing grid
-        // @param _Turtle - Turtle
-        // @param _XRange - range of X ordinate
-        // @param _YRange - range of Y ordinate
-        // @param _PointRadius - point of radius
-        friend void make_grid(
-            turtle::Turtle& _Turtle,
-            trangef _XRange,
-            trangef _YRange,
-            float _PointRadius
-        );
-
-        // Drawing grid
-        // @param _Turtle - Turtle
-        // @param _XRange - range of X and Y ordinates
-        // @param _PointRadius - point of radius
-        friend void make_grid(
-            turtle::Turtle& _Turtle,
-            trangef _Range,
-            float _PointRadius
-        );
-
-        // Drawing grid
-        // @param _Turtle - Turtle
-        // @param _XRange - range of X and Y ordinates
-        friend void make_grid(
-            turtle::Turtle& _Turtle,
-            trangef _Range
-        );
-
-        // Drawing line
-        // @param _Turtle - Turtle
-        // @param _X1 - X of start point
-        // @param _Y1 - Y of start point
-        // @param _X2 - X of end point
-        // @param _Y2 - Y of end point
-        friend void make_line(
-            turtle::Turtle& _Turtle,
-            const float& _X1,
-            const float& _Y1,
-            const float& _X2,
-            const float& _Y2
-        );
+        friend void make_plot(turtle::Turtle&, trangef, std::function<float(float)>);
+        friend void make_grid(turtle::Turtle&, trangef, trangef, float, const char*);
+        friend void make_grid(turtle::Turtle&, trangef, float, const char*);
+        friend void make_line(turtle::Turtle&, const float&, const float&, const float&, const float&);
 
     private:
         // Turtle position in read coords
         std::atomic<sf::Vector2f> m_Pos;
         std::atomic<sf::Vector2u> m_WindowSize;
         std::atomic<float> m_Ang;
+
+        // Color
+        sf::Color m_Color = ColorMap.at("black");
 
         // Points 
         std::mutex m_upMutex;

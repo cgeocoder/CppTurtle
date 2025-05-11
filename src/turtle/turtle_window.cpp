@@ -1,6 +1,5 @@
 #include "turtle_window.h"
 #include "../../res/turtle_paths.h"
-#include <iostream>
 
 namespace turtle {
 	const sf::Vector2f turtle_sprite_scale(0.015f, 0.015f);
@@ -60,7 +59,6 @@ namespace turtle {
 		sf::Image window_logo;
 		window_logo.loadFromFile(ICON_PATH);
 		wnd.setIcon(window_logo.getSize().x, window_logo.getSize().y, window_logo.getPixelsPtr());
-
 
 		// Turtle sprite
 
@@ -171,10 +169,10 @@ namespace turtle {
 
 			_ulMutex.unlock();
 
-			// sf::Vector2f pos = _Pos.load();
-			// this->m_Turtle.setPosition(pos.x, pos.y);
+			sf::Vector2f pos = _Pos.load();
+			this->m_Turtle.setPosition(pos.x, pos.y);
 
-			// wnd.draw(this->m_Turtle);
+			wnd.draw(this->m_Turtle);
 
 			wnd.display();
 		}

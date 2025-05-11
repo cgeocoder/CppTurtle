@@ -1,8 +1,11 @@
 #define _USE_MATH_DEFINES 
 
-#include "turtle.h"
 #include <cmath>
 #include <iostream>
+
+#include "turtle.h"
+#include "turtle_color.h"
+
 
 namespace turtle {
 
@@ -97,28 +100,25 @@ namespace turtle {
             this->m_Speed = 400.f;
     }
 
-    void Turtle::dot(float _Radius, TurtleColors _Color) {
+    void Turtle::set_color(const char* _Color) {
+        try {
+            this->m_Color = ColorMap.at(_Color);
+        } 
+        catch (std::exception ex) {
+            std::cout << "Turtle: unknown color '" << _Color << "'\n";
+        }
+    }
+
+    void Turtle::set_color(uint8_t _R, uint8_t _G, uint8_t _B, uint8_t _A) {
+        this->m_Color = sf::Color(_R, _G, _B, _A);
+    }
+
+    void Turtle::dot(const char* _Color, float _Radius) {
         sf::CircleShape point(_Radius, 10);
         float circle_center = _Radius / 2.f;
 
         point.setOrigin(circle_center, circle_center);
-
-        switch (_Color)
-        {
-        case turtle::TurtleColors::black:
-            point.setFillColor(sf::Color::Black);
-            break;
-        case turtle::TurtleColors::red:
-            point.setFillColor(sf::Color::Red);
-            break;
-        case turtle::TurtleColors::yellow:
-            point.setFillColor(sf::Color::Yellow);
-            break;
-        case turtle::TurtleColors::blue:
-            point.setFillColor(sf::Color::Blue);
-            break;
-        }
-
+        point.setFillColor(ColorMap.at(_Color));
         point.setPosition(this->m_Pos.load());
 
         this->m_upMutex.lock();
@@ -146,6 +146,7 @@ namespace turtle {
             line.setOrigin(sf::Vector2f(0.0f, 0.5f / 2.0f));
             line.setRotation(-ang_degrees);
             line.setPosition(this->from_map_to_real(last_pos_point));
+            line.setFillColor(this->m_Color);
 
             m_ulMutex.lock();
             m_UserLines.push_back(line);
@@ -156,7 +157,7 @@ namespace turtle {
         }
     }
 
-    void make_plot(turtle::Turtle& t, std::function<float(float)> f, trangef x_range) {
+    void make_plot(turtle::Turtle& t, trangef x_range, std::function<float(float)> f) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
@@ -172,7 +173,7 @@ namespace turtle {
         t.m_TailDown = tail_state;
     }
 
-    void make_grid(turtle::Turtle& t, trangef x_range, trangef y_range, float _PointRadius) {
+    void make_grid(turtle::Turtle& t, trangef x_range, trangef y_range, float _PointRadius, const char* _Color) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
@@ -180,7 +181,7 @@ namespace turtle {
         for (auto& x : x_range) {
             for (auto& y : y_range) {
                 t.set_pos(x, y);
-                t.dot(_PointRadius);
+                t.dot(_Color, _PointRadius);
             }
         }
 
@@ -188,7 +189,7 @@ namespace turtle {
         t.m_TailDown = tail_state;
     }
 
-    void make_grid(turtle::Turtle& t, trangef _range, float _PointRadius) {
+    void make_grid(turtle::Turtle& t, trangef _range, float _PointRadius, const char* _Color) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
@@ -196,23 +197,7 @@ namespace turtle {
         for (auto& x : _range) {
             for (auto& y : _range) {
                 t.set_pos(x, y);
-                t.dot(_PointRadius);
-            }
-        }
-
-        t.m_Pos.store(t.from_map_to_real(last_pos));
-        t.m_TailDown = tail_state;
-    }
-
-    void make_grid(turtle::Turtle& t, trangef _range) {
-        sf::Vector2f last_pos = t.get_pos();
-        bool tail_state = t.m_TailDown;
-        t.up();
-
-        for (auto& x : _range) {
-            for (auto& y : _range) {
-                t.set_pos(x, y);
-                t.dot(1.0f);
+                t.dot(_Color, _PointRadius);
             }
         }
 
