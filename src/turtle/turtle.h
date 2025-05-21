@@ -21,68 +21,25 @@ namespace turtle {
     // @param _Turtle - Turtle
     // @param _Function - ref to a function f(x) for drawing plot
     // @param _XRange - range of X ordinate
-    void make_plot(
+    void draw_function(
         turtle::Turtle& _Turtle,
-        trangef _XRange,
+        const trangef& _XRange,
         std::function<float(float)> _Function
     );
-
-    // Drawing grid
-    // @param _Turtle - Turtle
-    // @param _XRange - range of X ordinate
-    // @param _YRange - range of Y ordinate
-    // @param _PointRadius - point of radius
-    void make_grid(
-        turtle::Turtle& _Turtle,
-        trangef _XRange,
-        trangef _YRange,
-        float _PointRadius = 1.0f,
-        const char* _Color = "black"
-    );
-
-    // Drawing grid
-    // @param _Turtle - Turtle
-    // @param _XRange - range of X and Y ordinates
-    // @param _PointRadius - point of radius
-    void make_grid(
-        turtle::Turtle& _Turtle,
-        trangef _Range,
-        float _PointRadius = 1.0f,
-        const char* _Color = "black"
-    );
-
+    
     // Drawing line
     // @param _Turtle - Turtle
-    // @param _X1 - X of start point
-    // @param _Y1 - Y of start point
-    // @param _X2 - X of end point
-    // @param _Y2 - Y of end point
-    void make_line(
+    void draw_line(
         turtle::Turtle& _Turtle,
-        const float& _X1,
-        const float& _Y1,
-        const float& _X2,
-        const float& _Y2
+        const Vec2f& _Vec1,
+        const Vec2f& _Vec2
     );
-
-    enum class TurtleSpeed {
-        // disable animation
-        no_animation,
-        fast,
-        slow,
-        normal
-    };
 
     // A general class for working with Turtle graphics
     class Turtle {
     private:
         void set_coord_scalar(float _Ang);
         inline sf::Vector2f get_pos() { return this->from_real_to_map(this->m_Pos.load()); }
-
-        void movement_animation(
-            const sf::Vector2f& _LastPos,
-            const sf::Vector2f& _NewPos
-        );
 
         inline sf::Vector2f from_map_to_real(const float& x, const float& y) {
             return sf::Vector2f(this->m_HalfWindowWidth + x, this->m_HalfWindowHeight - y);
@@ -104,7 +61,10 @@ namespace turtle {
         // Turtle default constructor
         Turtle();
 
-        inline ~Turtle() { this->done(); }
+        inline ~Turtle() {
+            this->set_trace(true);
+            this->done(); 
+        }
 
         // Forward movement
         // @param _Offset - moving forward by [_Offset] units
@@ -145,37 +105,66 @@ namespace turtle {
         inline void down() { this->m_TailDown = true; }
 
         // Get Turtle angle
-        inline float get_angle() const { return this->m_Ang; }
+        inline float angle() const { return this->m_Ang; }
 
         // Set Turtle position
         void set_pos(const float& x, const float& y);
+        inline void set_pos(const Vec2f& _Vec) { this->set_pos(_Vec.x, _Vec.y); }
+        inline void set_pos(const Vec2i& _Vec) { this->set_pos((float)_Vec.x, (float)_Vec.y); }
 
         // Waits until the window closes
-        inline void done() { m_Window->done(); }
+        inline void done() { this->m_Window->done(); }
 
-        // Set Turtle speed
-        // Default speed is turtle::TurtleSpeed::normal
-        // @param _NewSpeed - val from turtle::TurtleSpeed
-        void set_speed(
-            TurtleSpeed _NewSpeed
-        );
+        inline void set_line_width(const float& _NewWidth) {
+            if (_NewWidth < 0.0f)
+                throw(std::exception("set_line_width() failed: width must be >= 0.0f"));
+
+            this->m_LineWidth = _NewWidth;
+        }
+
+        inline float get_line_width() {
+            return this->m_LineWidth;
+        }
+
+        inline void set_trace(const bool& _Trace) {
+            this->m_Trace.store(_Trace);
+        }
+
+        inline void set_screen_movable(const bool& _Move) {
+            this->m_ScreenMove.store(_Move);
+        }
+
+        inline void set_background(const char* const _Color) {
+            try {
+                this->m_Background = ColorMap.at(_Color);
+            }
+            catch (std::exception ex) {
+                std::cout << "Turtle: unknown color '" 
+                    << _Color << "'\n";
+            }
+        }
 
         void set_color(const char* _Color);
-        void set_color(uint8_t _R, uint8_t _G, uint8_t _B, uint8_t _A = 255);
+        void set_color(
+            const uint8_t& _R, 
+            const uint8_t& _G, 
+            const uint8_t& _B,
+            const uint8_t& _A = 255);
 
-        friend void make_plot(turtle::Turtle&, trangef, std::function<float(float)>);
-        friend void make_grid(turtle::Turtle&, trangef, trangef, float, const char*);
-        friend void make_grid(turtle::Turtle&, trangef, float, const char*);
-        friend void make_line(turtle::Turtle&, const float&, const float&, const float&, const float&);
+        friend void draw_function(turtle::Turtle&, const trangef&, std::function<float(float)>);
+        friend void draw_line(turtle::Turtle&, const Vec2f&, const Vec2f&);
 
     private:
         // Turtle position in read coords
         std::atomic<sf::Vector2f> m_Pos;
         std::atomic<sf::Vector2u> m_WindowSize;
         std::atomic<float> m_Ang;
+        std::atomic<bool> m_Trace;
+        std::atomic<bool> m_ScreenMove;
+        std::atomic<sf::Color> m_Background;
 
         // Color
-        sf::Color m_Color = ColorMap.at("black");
+        sf::Color m_Color;
 
         // Points 
         std::mutex m_upMutex;
@@ -183,13 +172,13 @@ namespace turtle {
 
         // Lines 
         std::mutex m_ulMutex;
-        std::list<sf::RectangleShape> m_UserLines;
+        std::vector<sf::RectangleShape> m_UserLines;
 
+        float m_LineWidth;
         float m_Sin, m_Cos;
+
         bool m_TailDown;
         unsigned int m_HalfWindowWidth, m_HalfWindowHeight;
-
-        float m_Speed;
         TurtleWindow* m_Window;
     };
 }

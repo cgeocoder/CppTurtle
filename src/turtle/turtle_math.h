@@ -68,26 +68,66 @@ namespace turtle {
 
 namespace turtle {
 
-    class Vec2f {
+    template<typename T>
+    class Vec2 {
     public:
-        Vec2f();
-        Vec2f(float x, float y);
+        inline Vec2() : x{ (T)0 }, y{ (T)0 } {}
+        inline Vec2(const T& x, const T& y) : x{ x }, y{ y } {}
 
-        float len(Vec2f vec) const;
-        // static float len(Vec2ld vec1, Vec2ld vec2);
+        template<typename U>
+        inline auto operator+(const Vec2<U>& _Right) const {
+            return Vec2<decltype(x + _Right.x)>(
+                this->x + _Right.x,
+                this->y + _Right.y
+            );
+        }
 
-        float x, y;
+        template<typename U>
+        inline auto operator-(const Vec2<U>& _Right) const  {
+            return Vec2<decltype(x - _Right.x)>(
+                this->x - _Right.x,
+                this->y - _Right.y
+            );
+        }
+
+        template<typename U>
+        inline auto operator*(const U& _Scalar) const {
+            return Vec2<decltype(x * _Scalar)>(
+                this->x * _Scalar,
+                this->y * _Scalar
+            );
+        }
+
+        template<typename U>
+        inline auto operator*(const Vec2<U>& _Right) const  {
+            return this->x * _Right.x + this->y * _Right.y;
+        }
+
+        inline auto len() const {
+            return std::sqrt(x * x + y * y);
+        }
+
+        T x, y;
     };
 
-    class Vec2u {
-    public:
-        Vec2u();
-        Vec2u(unsigned x, unsigned y);
+    using Vec2f = Vec2<float>;
+    using Vec2d = Vec2<double>;
+    using Vec2ld = Vec2<long double>;
+    using Vec2i = Vec2<int>;
+    using Vec2ui = Vec2<unsigned int>;
+    using Vec2l = Vec2<long>;
+    using Vec2ul = Vec2<unsigned long>;
+    using Vec2ll = Vec2<long long>;
+    using Vec2ull = Vec2<unsigned long long>;
+    using Vec2c = Vec2<char>;
+    using Vec2uc = Vec2<unsigned char>;
 
-        float len(Vec2u vec) const;
-
-        unsigned x, y;
-    };
+    template<typename T, typename U>
+    static inline double angle(const Vec2<T>& _Vec1, const Vec2<U>& _Vec2) {
+        return std::acos(
+            (_Vec1 * _Vec2) / (_Vec1.len() * _Vec2.len())
+        );
+    }
 }
 
 #endif // !__TURTLE_MATH_H__

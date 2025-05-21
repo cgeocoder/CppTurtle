@@ -10,6 +10,9 @@
 namespace turtle {
 
     Turtle::Turtle() : m_Ang{ 90.0l } {
+        this->m_Color = ColorMap.at("black");
+        this->m_Background = ColorMap.at("white");
+
         this->set_coord_scalar(this->m_Ang.load());
         this->up();
         
@@ -20,7 +23,10 @@ namespace turtle {
             this->m_upMutex,
             this->m_UserPoints,
             this->m_ulMutex,
-            this->m_UserLines
+            this->m_UserLines,
+            this->m_Trace,
+            this->m_ScreenMove,
+            this->m_Background
         );
 
         sf::Vector2u window_size = this->m_WindowSize.load();
@@ -29,9 +35,11 @@ namespace turtle {
         this->m_HalfWindowHeight = static_cast<unsigned int>(window_size.y / 2.0f);
 
         this->set_pos(0.0f, 0.0f);
-        this->set_speed(TurtleSpeed::normal);
+        // this->set_speed(TurtleSpeed::normal);
 
         this->down();
+        this->m_Trace = true;
+        this->m_LineWidth = 0.125f;
     }
 
     void Turtle::set_coord_scalar(float _Ang) {
@@ -39,38 +47,13 @@ namespace turtle {
         this->m_Cos = tcos(_Ang);
     }
 
-    void Turtle::movement_animation(const sf::Vector2f& _LastPos, const sf::Vector2f& _NewPos) {
-        float step_x = (_NewPos.x - _LastPos.x) / this->m_Speed;
-        float step_y = (_NewPos.y - _LastPos.y) / this->m_Speed;
-
-        std::thread([&]() {
-            for (int i = 0; i < (int)this->m_Speed; ++i) {
-                sf::Vector2f pos = this->get_pos();
-
-                this->set_pos(
-                    pos.x += step_x,
-                    pos.y += step_y
-                );
-
-                std::this_thread::sleep_for(std::chrono::microseconds(1));
-            }
-
-        }).join(); // waiting animation
-
-        this->set_pos(
-            _NewPos.x,
-            _NewPos.y
-        );
-    }
-
     void Turtle::forward(const float& step) {
         sf::Vector2f last_pos = this->get_pos();
-        sf::Vector2f new_pos = {
+
+        this->set_pos(
             last_pos.x + step * this->m_Cos,
             last_pos.y + step * this->m_Sin
-        };
-
-        this->movement_animation(last_pos, new_pos);
+        );
     }
 
     void Turtle::backward(const float& step) {
@@ -87,19 +70,6 @@ namespace turtle {
         this->set_coord_scalar(this->m_Ang.load());
     }
 
-    void Turtle::set_speed(TurtleSpeed new_speed) {
-
-        // TurtleSpeed::no_animation or undef
-        this->m_Speed = 1.0f;
-
-        if (new_speed == TurtleSpeed::fast)
-            this->m_Speed = 10.f;
-        else if (new_speed == TurtleSpeed::normal)
-            this->m_Speed = 100.f;
-        else if (new_speed == TurtleSpeed::slow)
-            this->m_Speed = 400.f;
-    }
-
     void Turtle::set_color(const char* _Color) {
         try {
             this->m_Color = ColorMap.at(_Color);
@@ -109,7 +79,7 @@ namespace turtle {
         }
     }
 
-    void Turtle::set_color(uint8_t _R, uint8_t _G, uint8_t _B, uint8_t _A) {
+    void Turtle::set_color(const uint8_t& _R, const uint8_t& _G, const uint8_t& _B, const uint8_t& _A) {
         this->m_Color = sf::Color(_R, _G, _B, _A);
     }
 
@@ -141,9 +111,9 @@ namespace turtle {
             float alpha = std::copysignf(acos(cos_a), vec.y);
             float ang_degrees = (180.f / (float)M_PI) * alpha;
 
-            sf::RectangleShape line(sf::Vector2f(vec_len, 0.5f));
+            sf::RectangleShape line(sf::Vector2f(vec_len, this->m_LineWidth));
             line.setFillColor(sf::Color::Black);
-            line.setOrigin(sf::Vector2f(0.0f, 0.5f / 2.0f));
+            line.setOrigin(sf::Vector2f(0.0f, this->m_LineWidth / 2.0f));
             line.setRotation(-ang_degrees);
             line.setPosition(this->from_map_to_real(last_pos_point));
             line.setFillColor(this->m_Color);
@@ -157,7 +127,7 @@ namespace turtle {
         }
     }
 
-    void make_plot(turtle::Turtle& t, trangef x_range, std::function<float(float)> f) {
+    void draw_function(turtle::Turtle& t, const trangef& x_range, std::function<float(float)> f) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
@@ -173,46 +143,14 @@ namespace turtle {
         t.m_TailDown = tail_state;
     }
 
-    void make_grid(turtle::Turtle& t, trangef x_range, trangef y_range, float _PointRadius, const char* _Color) {
+    void draw_line(turtle::Turtle& t, const Vec2f& _Vec1, const Vec2f& _Vec2) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
 
-        for (auto& x : x_range) {
-            for (auto& y : y_range) {
-                t.set_pos(x, y);
-                t.dot(_Color, _PointRadius);
-            }
-        }
-
-        t.m_Pos.store(t.from_map_to_real(last_pos));
-        t.m_TailDown = tail_state;
-    }
-
-    void make_grid(turtle::Turtle& t, trangef _range, float _PointRadius, const char* _Color) {
-        sf::Vector2f last_pos = t.get_pos();
-        bool tail_state = t.m_TailDown;
-        t.up();
-
-        for (auto& x : _range) {
-            for (auto& y : _range) {
-                t.set_pos(x, y);
-                t.dot(_Color, _PointRadius);
-            }
-        }
-
-        t.m_Pos.store(t.from_map_to_real(last_pos));
-        t.m_TailDown = tail_state;
-    }
-
-    void make_line(turtle::Turtle& t, const float& _X1, const float& _Y1, const float& _X2, const float& _Y2) {
-        sf::Vector2f last_pos = t.get_pos();
-        bool tail_state = t.m_TailDown;
-        t.up();
-
-        t.set_pos(_X1, _Y1);
+        t.set_pos(_Vec1.x, _Vec1.y);
         t.down();
-        t.set_pos(_X2, _Y2);
+        t.set_pos(_Vec2.x, _Vec2.y);
         t.up();
 
         t.m_Pos.store(t.from_map_to_real(last_pos));

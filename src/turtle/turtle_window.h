@@ -31,7 +31,10 @@ namespace turtle {
 			std::mutex& _upMutex,
 			std::list<sf::CircleShape>& _UserPoints,
 			std::mutex& _ulMutex,
-			std::list<sf::RectangleShape>& _UserLines
+			std::vector<sf::RectangleShape>& _UserLines,
+			std::atomic<bool>& _Trace,
+			std::atomic<bool>& _ScreenMove,
+			std::atomic<sf::Color>& _Background
 		);
 
 		inline ~TurtleWindow() {
@@ -45,7 +48,10 @@ namespace turtle {
 			std::mutex& _upMutex,
 			std::list<sf::CircleShape>& _UserPoints,
 			std::mutex& _ulMutex,
-			std::list<sf::RectangleShape>& _UserLines
+			std::vector<sf::RectangleShape>& _UserLines,
+			std::atomic<bool>& _Trace,
+			std::atomic<bool>& _ScreenMove,
+			std::atomic<sf::Color>& _Background
 		);
 
 		// Waits until the window closes
