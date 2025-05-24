@@ -7,8 +7,64 @@
 
 #include <cmath>
 #include <list>
+#include <stdarg.h>
 
+namespace turtle {
+
+    // Base Polynomial class
+    class Polynomial {
+    public:
+
+        // The polynomial function
+        virtual float f(float x) const = 0;
+    };
+
+    // Polynomial of the zero degree
+    class Polynomial0 : public Polynomial {
+    public:
+        float a;
+
+        Polynomial0(float a);
+        float f(float x) const override;
+        float derivative() const;
+    };
+
+    // Polynomial of the first degree
+    class Polynomial1 : public Polynomial {
+    public:
+        float a, b;
+
+        Polynomial1(float a, float b);
+        float f(float x) const override;
+        Polynomial0 derivative() const;
+    };
+
+    // Polynomial of the second degree
+    class Polynomial2 : public Polynomial {
+    public:
+        float a, b, c;
+
+        Polynomial2(float a, float b, float c);
+        float f(float x) const override;
+        Polynomial1 derivative() const;
+
+    };
+
+    // Polynomial of the third degree
+    class Polynomial3 : public Polynomial {
+    public:
+        float a, b, c, d;
+
+        Polynomial3(float a, float b, float c, float d);
+        float f(float x) const override;
+        Polynomial2 derivative() const;
+    };
+}
+
+// Turtle range <long long>
 using trange = std::list<long long>;
+
+// Turtle range <float>
 using trangef = std::list<float>;
 
 namespace turtle {

@@ -1,5 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS 
+
 #include "turtle_window.h"
 #include "../../res/turtle_paths.h"
+#include <iostream>
 
 namespace turtle {
 	const sf::Vector2f turtle_sprite_scale(0.015f, 0.015f);
@@ -129,7 +132,7 @@ namespace turtle {
 					if (event.type == sf::Event::MouseWheelScrolled) {
 						if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
 							if (event.mouseWheelScroll.delta < 0) {
-								if (zoom_count > -18) {
+								if (zoom_count > -30) {
 									view.zoom(1.1f);
 									zoom_count -= 1;
 								}
@@ -165,6 +168,16 @@ namespace turtle {
 						}
 
 						mouse_pos = sf::Mouse::getPosition(wnd);
+#ifdef _DEBUG
+						char ttl[128];
+						sf::Vector2f center = view.getCenter();
+
+						sprintf(ttl, "CppTurtle (Debug): Mouse (%d, %d), Center (%.3f, %f)",
+							mouse_pos.x, mouse_pos.y,
+							(double)center.x, (double)center.y);
+
+						wnd.setTitle(ttl);
+#endif
 					}
 
 					// Centering map by turtle
@@ -177,13 +190,6 @@ namespace turtle {
 			wnd.clear(_Background.load());
 			wnd.setView(view);
 
-			_upMutex.lock();
-
-			for (auto& point : _UserPoints)
-				wnd.draw(point);
-
-			_upMutex.unlock();
-
 			_ulMutex.lock();
 			
 			{
@@ -194,6 +200,13 @@ namespace turtle {
 			}
 			
 			_ulMutex.unlock();
+
+			_upMutex.lock();
+
+			for (sf::CircleShape& point : _UserPoints)
+				wnd.draw(point);
+
+			_upMutex.unlock();
 
 			// sf::Vector2f pos = _Pos.load();
 			// this->m_Turtle.setPosition(pos.x, pos.y);

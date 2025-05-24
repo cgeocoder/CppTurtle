@@ -35,8 +35,6 @@ namespace turtle {
         this->m_HalfWindowHeight = static_cast<unsigned int>(window_size.y / 2.0f);
 
         this->set_pos(0.0f, 0.0f);
-        // this->set_speed(TurtleSpeed::normal);
-
         this->down();
         this->m_Trace = true;
         this->m_LineWidth = 0.125f;
@@ -84,7 +82,7 @@ namespace turtle {
     }
 
     void Turtle::dot(const char* _Color, float _Radius) {
-        sf::CircleShape point(_Radius, 10);
+        sf::CircleShape point(_Radius, 50);
         float circle_center = _Radius / 2.f;
 
         point.setOrigin(circle_center, circle_center);
@@ -127,7 +125,7 @@ namespace turtle {
         }
     }
 
-    void draw_function(turtle::Turtle& t, const trangef& x_range, std::function<float(float)> f) {
+    void draw_function(turtle::Turtle& t, const trangef& x_range, const std::function<float(float)> f) {
         sf::Vector2f last_pos = t.get_pos();
         bool tail_state = t.m_TailDown;
         t.up();
@@ -137,6 +135,22 @@ namespace turtle {
 
         for (auto& x : x_range) {
             t.set_pos(x, f(x));
+        }
+
+        t.m_Pos.store(t.from_map_to_real(last_pos));
+        t.m_TailDown = tail_state;
+    }
+
+    void draw_function(turtle::Turtle& t, const trangef& x_range, const Polynomial& _P) {
+        sf::Vector2f last_pos = t.get_pos();
+        bool tail_state = t.m_TailDown;
+        t.up();
+
+        t.set_pos(*x_range.begin(), _P.f(*x_range.begin()));
+        t.down();
+
+        for (auto& x : x_range) {
+            t.set_pos(x, _P.f(x));
         }
 
         t.m_Pos.store(t.from_map_to_real(last_pos));

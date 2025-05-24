@@ -3,6 +3,8 @@
 #ifndef __TURTLE_WINDOW_H__
 #define __TURTLE_WINDOW_H__
 
+#define _CRT_SECURE_NO_WARNINGS 
+
 #include <SFML/Graphics.hpp>
 
 #include <thread>

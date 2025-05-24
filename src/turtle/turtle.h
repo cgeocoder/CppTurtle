@@ -18,21 +18,33 @@ namespace turtle {
     class Turtle;
 
     // Drawing plot by function
-    // @param _Turtle - Turtle
-    // @param _Function - ref to a function f(x) for drawing plot
-    // @param _XRange - range of X ordinate
+    // @param turtle - Turtle
+    // @param xrange - range of X ordinate
+    // @param function - ref to a function f(x) for drawing plot
     void draw_function(
-        turtle::Turtle& _Turtle,
-        const trangef& _XRange,
-        std::function<float(float)> _Function
+        turtle::Turtle& turtle,
+        const trangef& xrange,
+        const std::function<float(float)> function
+    );
+
+    // Drawing plot by Polynomial function
+    // @param turtle - Turtle
+    // @param xrange - range of X ordinate
+    // @param polynomial - x degree polynomial
+    void draw_function(
+        turtle::Turtle& turtle,
+        const trangef& xrange,
+        const Polynomial& polynomial
     );
     
     // Drawing line
-    // @param _Turtle - Turtle
+    // @param turtle - Turtle
+    // @param vec1 - begin point
+    // @param vec2 - end point
     void draw_line(
-        turtle::Turtle& _Turtle,
-        const Vec2f& _Vec1,
-        const Vec2f& _Vec2
+        turtle::Turtle& turtle,
+        const Vec2f& vec1,
+        const Vec2f& vec2
     );
 
     // A general class for working with Turtle graphics
@@ -67,36 +79,49 @@ namespace turtle {
         }
 
         // Forward movement
-        // @param _Offset - moving forward by [_Offset] units
+        // @param offset - moving forward by [offset] units
         void forward(
-            const float& _Offset
+            const float& offset
         );
 
         // Backward movement
-        // @param _Offset - moving backward by [_Offset] units
+        // @param offset - moving backward by [offset] units
         void backward(
-            const float& _Offset
+            const float& offset
         );
 
-        // Turn right by [_Ang] degrees
-        // @param _Ang - the value of the rotation in degrees
+        // Turn right by [angle] degrees
+        // @param angle - the value of the rotation in degrees
         void right(
-            const float& _Ang
+            const float& angle
         );
 
-        // Turn left by [_Ang] degrees
-        // @param _Ang - the value of the rotation in degrees
+        // Turn left by [angle] degrees
+        // @param angle - the value of the rotation in degrees
         void left(
-            const float& _Ang
+            const float& angle
         );
 
         // Draw point
-        // @param _Color - dot color
-        // @param _Radius - dot radius
+        // @param color - dot color
+        // @param radius - dot radius
         void dot(
-            const char* _Color = "black",
-            float _Radius = 2.0f
+            const char* color = "black",
+            float radius = 2.0f
         );
+
+        // Set Turtle position
+        // @param x - x ordinate
+        // @param y - y ordinate
+        void set_pos(
+            const float& x, 
+            const float& y
+        );
+
+        // Set Turtle position
+        inline void set_pos(const Vec2f& vec) { this->set_pos(vec.x, vec.y); }
+        // Set Turtle position
+        inline void set_pos(const Vec2i& vec) { this->set_pos((float)vec.x, (float)vec.y); }
 
         // Raise the Turtle tail
         inline void up() { this->m_TailDown = false; }
@@ -104,54 +129,50 @@ namespace turtle {
         // Lower the Turtle tail
         inline void down() { this->m_TailDown = true; }
 
-        // Get Turtle angle
+        // Get Turtle angle in [0; 360]
         inline float angle() const { return this->m_Ang; }
-
-        // Set Turtle position
-        void set_pos(const float& x, const float& y);
-        inline void set_pos(const Vec2f& _Vec) { this->set_pos(_Vec.x, _Vec.y); }
-        inline void set_pos(const Vec2i& _Vec) { this->set_pos((float)_Vec.x, (float)_Vec.y); }
 
         // Waits until the window closes
         inline void done() { this->m_Window->done(); }
 
-        inline void set_line_width(const float& _NewWidth) {
-            if (_NewWidth < 0.0f)
+        inline void set_line_width(const float& new_width) {
+            if (new_width < 0.0f)
                 throw(std::exception("set_line_width() failed: width must be >= 0.0f"));
 
-            this->m_LineWidth = _NewWidth;
+            this->m_LineWidth = new_width;
         }
 
-        inline float get_line_width() {
+        inline float get_line_width() const {
             return this->m_LineWidth;
         }
 
-        inline void set_trace(const bool& _Trace) {
-            this->m_Trace.store(_Trace);
+        inline void set_trace(const bool& trace) {
+            this->m_Trace.store(trace);
         }
 
-        inline void set_screen_movable(const bool& _Move) {
-            this->m_ScreenMove.store(_Move);
+        inline void set_screen_movable(const bool& movable) {
+            this->m_ScreenMove.store(movable);
         }
 
-        inline void set_background(const char* const _Color) {
+        inline void set_background(const char* const color) {
             try {
-                this->m_Background = ColorMap.at(_Color);
+                this->m_Background = ColorMap.at(color);
             }
             catch (std::exception ex) {
                 std::cout << "Turtle: unknown color '" 
-                    << _Color << "'\n";
+                    << color << "'\n";
             }
         }
 
-        void set_color(const char* _Color);
+        void set_color(const char* color);
         void set_color(
-            const uint8_t& _R, 
-            const uint8_t& _G, 
-            const uint8_t& _B,
-            const uint8_t& _A = 255);
+            const uint8_t& r, 
+            const uint8_t& g, 
+            const uint8_t& b,
+            const uint8_t& a = 255);
 
-        friend void draw_function(turtle::Turtle&, const trangef&, std::function<float(float)>);
+        friend void draw_function(turtle::Turtle&,const trangef&, const Polynomial&);
+        friend void draw_function(turtle::Turtle&, const trangef&, const std::function<float(float)>);
         friend void draw_line(turtle::Turtle&, const Vec2f&, const Vec2f&);
 
     private:
