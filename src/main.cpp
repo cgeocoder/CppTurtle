@@ -2,33 +2,26 @@
 
 #include "cpl/cpl.h"
 
-static float func1(float x) {
-    return 2.0f * x * x;
-}
-
-static float func1_2(float x) {
-    return -0.2f * x * x - 1.0f;
-}
-
 int main(int argc, char* argv[]) {
     cpl::Window wnd;
 
     // Plot 1 - line
 
-    cpl::Plot plot1{ 10.0f, 1.0f };
-    plot1.set_title("Plot 1");
+    cpl::Plot plot1{ 5.0f, 1.0f };
+    plot1.set_title("CPlotLib");
 
     cpl::Polyline pline;
+    pline.set_width(0.05f);
+    pline.set_color("purple");
 
-    pline.add_point({ -10.0f, 0.0f });
-    pline.add_point({ -8.0f, 7.0f });
-    pline.add_point({ -6.0f, -9.0f });
-    pline.add_point({ -4.0f, -8.0f });
-    pline.add_point({ -2.0f, 0.0f });
-    pline.add_point({ 0.0f, 12.0f });
+    for (auto t : cpl::range(0.0f, 12.0f * 180.0f, .1f)) {
+        pline.add_point({
+            cpl::sin(t) * (std::exp(cpl::cos(t)) - 2.0f * cpl::cos(4.0f * t) + pow(cpl::sin((1.0f / 12.0f) * t), 5.0f)),
+            cpl::cos(t) * (std::exp(cpl::cos(t)) - 2.0f * cpl::cos(4.0f * t) + pow(cpl::sin((1.0f / 12.0f) * t), 5.0f))
+        });
+    }
 
     plot1.add_polyline(pline);
-    
     wnd.add_plot(plot1);
 
     return 0;

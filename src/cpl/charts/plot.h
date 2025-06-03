@@ -7,9 +7,9 @@
 #include "../function.h"
 #include "../primitives/line.h"
 #include "../primitives/point.h"
+#include "../primitives/polyline.h"
 
 #include <vector>
-#include "../primitives/polyline.h"
 
 namespace cpl {
 	static const sf::Vector2f DEFAULT_FONT_SCALE = { 0.025f, 0.025f };
@@ -18,11 +18,11 @@ namespace cpl {
 	static constexpr const unsigned int DEFAULT_FONT_CHAR_SIZE = 20;
 	static constexpr const sf::Text::Style DEFAULT_FONT_STYLE = sf::Text::Regular;
 
-	// 
+	// General chart class
 	class Plot : public ChartBase {
 	private:
-		// redraw all entities
-		void redraw();
+		// draw all entities
+		void draw();
 
 		// draw all Function entities
 		void draw_static_function(const Function& f);
@@ -32,6 +32,12 @@ namespace cpl {
 			of the square with a side of 2 m_Radius
 		*/
 		void check_line_boundaries(Line& line) const;
+
+		// Create line in CURRENT PLOT coordinate system
+		sf::RectangleShape make_line(const Line& ln);
+
+		// Create line in CURRENT PLOT coordinate system
+		sf::CircleShape make_point(const Point& pt);
 
 	public:
 		friend class Window;
@@ -64,20 +70,26 @@ namespace cpl {
 
 		// Add a static line to the Plot
 		// @param line - cpl::Line object
-		void add_line(Line& line);
+		void add_line(const Line& line);
 
+		// Add a static polyline to the Plot
+		// @param polyline - cpl::Polyline object
 		void add_polyline(const Polyline& polyline);
 		
 		// Set the title for the Plot
+		// @param title - new title
 		void set_title(const std::string& title) override;
 
 	private:
 		float m_Radius, m_Step, m_FuncQuality;
 
 		std::vector<Line> m_Lines;
-		std::vector<Line> m_StaticLines;
-		std::vector<Line> m_StaticFuncLines;
-		std::vector<Point> m_StaticPoints;
+		std::vector<Point> m_Points;
+
+		std::vector<sf::RectangleShape> m_StaticLines;
+		std::vector<sf::RectangleShape> m_PlotLines;
+		std::vector<sf::RectangleShape> m_StaticFuncLines;
+		std::vector<sf::CircleShape> m_StaticPoints;
 		std::vector<Function> m_StaticFunctions;
 	};
 }

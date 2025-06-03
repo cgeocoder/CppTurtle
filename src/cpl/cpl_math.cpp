@@ -37,7 +37,7 @@ namespace cpl {
         return _rng;
     }
 
-    float tsin(const float& _Ang) {
+    float sin(const float& _Ang) {
         float rad_ang = (float)M_PI * std::fmod(_Ang, 360.0f) / 180.0f;
         float abs_rad_ang = std::fabs(rad_ang);
 
@@ -58,7 +58,7 @@ namespace cpl {
         }
     }
 
-    float tcos(const float& _Ang) {
+    float cos(const float& _Ang) {
         float rad_ang = (float)M_PI * std::fmod(_Ang, 360.0f) / 180.0f;
         float abs_rad_ang = std::fabs(rad_ang);
 

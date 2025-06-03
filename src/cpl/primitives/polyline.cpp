@@ -17,6 +17,11 @@ namespace cpl {
 		m_Points.push_back(coords);
 	}
 
+	void Polyline::set_width(float width) {
+		if (width > 0.0)
+			m_Width = width;
+	}
+
 	void Polyline::set_color(const char* color) {
 		try {
 			m_Color = ColorMap.at(color);

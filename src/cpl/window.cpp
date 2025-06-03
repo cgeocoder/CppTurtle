@@ -30,20 +30,20 @@ namespace cpl {
 
 		sf::RenderWindow wnd(
 			sf::VideoMode(window_size.x, window_size.y),
-			"CPLOTLIB",
+			"C++ Plots",
 			sf::Style::Titlebar | sf::Style::Close,
 			wc_settings
 		);
 
 		// Window Icon
 
-		// sf::Image window_logo;
-		// window_logo.loadFromFile(ICON_PATH);
-		// wnd.setIcon(
-		// 	window_logo.getSize().x,
-		// 	window_logo.getSize().y,
-		// 	window_logo.getPixelsPtr()
-		// );
+		sf::Image window_logo;
+		window_logo.loadFromFile(ICON_PATH);
+		wnd.setIcon(
+		 	window_logo.getSize().x,
+		 	window_logo.getSize().y,
+		 	window_logo.getPixelsPtr()
+		);
 
 		volatile bool view_move_enable = false;
 		sf::Vector2i mouse_pos = sf::Mouse::getPosition(wnd);
@@ -65,8 +65,6 @@ namespace cpl {
 		float a = 0.0f;
 		signed int zoom_count = 0;
 		while (wnd.isOpen()) {
-			// while (!_Trace.load());
-
 			sf::Event event;
 
 			while (wnd.pollEvent(event)) {
@@ -128,20 +126,20 @@ namespace cpl {
 			m_plotMutex.lock();
 
 			for (Plot& Plot : m_plots) {
-				for (Line& lines : Plot.m_Lines) {
-					wnd.draw(make_line(lines));
+				for (sf::RectangleShape& line : Plot.m_PlotLines) {
+					wnd.draw(line);
 				}
 
-				for (Line& lines : Plot.m_StaticFuncLines) {
-					wnd.draw(make_line(lines));
+				for (sf::RectangleShape& line : Plot.m_StaticFuncLines) {
+					wnd.draw(line);
 				}
 
-				for (Line& lines : Plot.m_StaticLines) {
-					wnd.draw(make_line(lines));
+				for (sf::RectangleShape& line : Plot.m_StaticLines) {
+					wnd.draw(line);
 				}
 
-				for (Point& point : Plot.m_StaticPoints) {
-					wnd.draw(make_point(point));
+				for (sf::CircleShape& point : Plot.m_StaticPoints) {
+					wnd.draw(point);
 				}
 
 				if (Plot.m_Title) {
@@ -155,48 +153,38 @@ namespace cpl {
 		}
 	}
 
-	void Window::add_plot(Plot& Plot) {
+	void Window::add_plot(Plot& plot) {
 		m_plotMutex.lock();
 
-		if (Plot.m_Title)
-			Plot.m_Title->setPosition(from_map_to_real(Plot.m_Title->getPosition()));
+		plot.draw();
 
-		m_plots.push_back(Plot);
+		// Convert from current plot coordinates to global
+
+		for (sf::RectangleShape& line : plot.m_PlotLines) {
+			line.setPosition(from_map_to_real(line.getPosition()));
+		}
+
+		for (sf::RectangleShape& line : plot.m_StaticFuncLines) {
+			line.setPosition(from_map_to_real(line.getPosition()));
+		}
+
+		for (sf::RectangleShape& line : plot.m_StaticLines) {
+			line.setPosition(from_map_to_real(line.getPosition()));
+		}
+
+		for (sf::CircleShape& point : plot.m_StaticPoints) {
+			point.setPosition(from_map_to_real(point.getPosition()));
+		}
+
+		if (plot.m_Title)
+			plot.m_Title->setPosition(from_map_to_real(plot.m_Title->getPosition()));
+
+		m_plots.push_back(plot);
 		m_plotMutex.unlock();
 	}
 
 	void Window::done() {
 		if (m_WndThread.joinable())
 			m_WndThread.join();
-	}
-
-	sf::RectangleShape Window::make_line(const Line& ln) {
-		Vec2f last_pos_point = ln.a;
-		Vec2f new_pos_point = ln.b;
-		Vec2f vec{ new_pos_point.x - last_pos_point.x, new_pos_point.y - last_pos_point.y };
-
-		float vec_len = sqrt(vec.x * vec.x + vec.y * vec.y);
-
-		float cos_a = vec.x / vec_len;
-		float alpha = std::copysignf(acos(cos_a), vec.y);
-		float ang_degrees = (180.f / (float)M_PI) * alpha;
-
-		sf::RectangleShape line(sf::Vector2f(vec_len, ln.m_Width));
-		line.setFillColor(sf::Color::Black);
-		line.setOrigin(sf::Vector2f(0.0f, ln.m_Width / 2.0f));
-		line.setRotation(-ang_degrees);
-		line.setPosition(from_map_to_real(last_pos_point));
-		line.setFillColor(ln.m_Color);
-
-		return line;
-	}
-
-	sf::CircleShape Window::make_point(const Point& pt) {
-		sf::CircleShape point{ pt.m_Radius, 50};
-		point.setOrigin({ pt.m_Radius, pt.m_Radius });
-		point.setFillColor(pt.m_Color);
-		point.setPosition(from_map_to_real(pt.coords));
-
-		return point;
 	}
 }

@@ -58,13 +58,13 @@ namespace cpl {
 
     // cpl sin function
     // @param _Ang - angle in degrees
-    float tsin(
+    float sin(
         const float& _Ang
     );
 
     // cpl Cos function
     // @param _Ang - angle in degrees
-    float tcos(
+    float cos(
         const float& _Ang
     );
 

@@ -27,6 +27,11 @@ namespace cpl {
 		m_Color = color;
 	}
 
+	void Line::set_width(float width) {
+		if (width > 0.0)
+			m_Width = width;
+	}
+
 	void Line::set_color(const char* color) {
 		try {
 			m_Color = ColorMap.at(color);
